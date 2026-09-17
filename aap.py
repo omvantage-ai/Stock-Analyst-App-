@@ -9,7 +9,7 @@ st.title("📈 AI Stock Analyst & Live Chart")
 st.markdown("TradingView चार्ट्स और Gemini AI के साथ अपना खुद का स्मार्ट टर्मिनल।")
 
 # 2. साइडबार में API Key डालने की जगह (ताकि कोड में न दिखे)
-API_KEY = st.sidebar.text_input("अपनी Gemini API Key डालें:", type="password")
+API_KEY = st.text_input("अपनी Gemini API Key डालें:", type="password")
 
 # 3. यूज़र से कंपनी का नाम लेना (NSE/BSE सिंबल के साथ)
 st.write("---")
