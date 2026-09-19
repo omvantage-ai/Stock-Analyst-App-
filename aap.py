@@ -59,7 +59,8 @@ if st.button("📊 एनालिसिस और चार्ट दिखा�
         st.subheader("🤖 AI फंडामेंटल एनालिसिस")
         
         # नया और फ़ास्ट Gemini 1.5 Flash मॉडल इस्तेमाल कर रहे हैं
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={API_KEY}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={API_KEY}"
+
         headers = {'Content-Type': 'application/json'}
         
         prompt_text = f"""
