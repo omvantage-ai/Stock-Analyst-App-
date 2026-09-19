@@ -11,7 +11,7 @@ st.title("📈 स्मार्ट AI स्टॉक एनालिस्ट
 st.markdown("भारतीय शेयर बाजार का विश्लेषण करने के लिए आपका अपना स्मार्ट टर्मिनल।")
 
 # 2. साइडबार में API Key डालने की जगह
-API_KEY = st.sidebar.text_input("🔑 अपनी Gemini API Key डालें:", type="password", help="यहाँ अपनी Google Gemini Pro API Key डालें।")
+API_KEY = st.text_input("🔑 अपनी Gemini API Key डालें:", type="password", help="यहाँ अपनी Google Gemini Pro API Key डालें।")
 
 st.write("---")
 
