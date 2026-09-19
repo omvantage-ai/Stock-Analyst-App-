@@ -5,117 +5,81 @@ import requests
 import json
 from datetime import datetime
 
-# 1. ऐप की सेटिंग और डिज़ाइन (प्रोफेशनल लुक के लिए)
+# 1. ऐप की सेटिंग
 st.set_page_config(page_title="स्मार्ट AI स्टॉक एनालिस्ट", layout="wide", page_icon="📈")
 st.title("📈 स्मार्ट AI स्टॉक एनालिस्ट")
-st.markdown("भारतीय शेयर बाजार का विश्लेषण करने के लिए आपका अपना स्मार्ट टर्मिनल।")
 
-# 2. साइडबार में API Key डालने की जगह
-API_KEY = st.text_input("🔑 अपनी Gemini API Key डालें:", type="password", help="यहाँ अपनी Google Gemini Pro API Key डालें।")
+# 2. साइडबार में API Key (इसे हर बार ऐप खोलने पर डालना होगा)
+API_KEY = st.text_input("🔑 अपनी Gemini API Key डालें:", type="password")
 
 st.write("---")
-
-# 3. यूज़र इनपुट फ़ील्ड्स
 col1, col2 = st.columns([3, 1])
 with col1:
-    company_name = st.text_input("कंपनी का नाम या Ticker लिखें (उदा. RELIANCE, INFOSYS):", "RELIANCE")
+    company_name = st.text_input("कंपनी का नाम (उदा. RELIANCE, TCS):", "RELIANCE")
 with col2:
-    exchange = st.selectbox("एक्सचेंज चुनें:", ["NSE", "BSE"], help="याहू फाइनेंस भारतीय कंपनियों के लिए सही सिंबल खोजने के लिए एक्सचेंज का उपयोग करता है।")
+    exchange = st.selectbox("एक्सचेंज:", ["NSE", "BSE"])
 
-# जब बटन दबाया जाए
-if st.button("📊 स्मार्ट एनालिसिस दिखाएं"):
+if st.button("📊 एनालिसिस और चार्ट दिखाएं"):
     
     if not API_KEY:
-        st.error("कृपया साइडबार में अपनी API Key डालें!")
+        st.error("कृपया मेनू (≡) से साइडबार खोलें और अपनी API Key डालें!")
     else:
         st.write("---")
-        
-        # 4. याहू फाइनेंस के लिए टिकर तैयार करना
-        # याहू फाइनेंस को 'NSE' या 'BSE' टिकर की आवश्यकता होती है।
         yfinance_ticker = company_name.upper()
-        
         if exchange == "NSE":
             yfinance_ticker += ".NS"
         elif exchange == "BSE":
             yfinance_ticker += ".BO"
 
-        st.subheader(f"🔴 {company_name.upper()} ({exchange}) का डेटा लोड हो रहा है...")
+        st.subheader(f"🔴 {company_name.upper()} का चार्ट (पिछले 1 महीने का ट्रेंड)")
 
-        # ---- भाग 1: याहू फाइनेंस से लाइव डेटा प्राप्त करना ----
-        with st.spinner("लाइव डेटा प्राप्त किया जा रहा है..."):
+        # ---- भाग 1: चार्ट (वीकेंड प्रूफ) ----
+        with st.spinner("डेटा लोड हो रहा है..."):
             ticker_data = yf.Ticker(yfinance_ticker)
             try:
-                # 1-मिनट अंतराल के साथ 1-दिन का डेटा प्राप्त करने का प्रयास करें (लाइव डेटा के लिए)
-                hist = ticker_data.history(period="1d", interval="1m")
+                # 1 महीने का डेली डेटा ला रहे हैं ताकि वीकेंड पर भी चार्ट खाली न दिखे
+                hist = ticker_data.history(period="1mo", interval="1d")
                 
                 if hist.empty:
-                    # यदि 1-मिनट का डेटा नहीं है, तो व्यापक डेटा का प्रयास करें (जैसे कि 5-दिन 1-घंटे अंतराल के साथ)
-                    hist = ticker_data.history(period="5d", interval="1h")
-
-                if hist.empty:
-                    st.error(f"{company_name.upper()} के लिए डेटा नहीं मिला। कृपया टिकर की जाँच करें या फिर प्रयास करें।")
+                    st.error("डेटा नहीं मिला। कृपया कंपनी का सही नाम (Ticker) चेक करें।")
                 else:
-                    st.write(f"अंतिम डेटा अपडेट: {hist.index[-1].strftime('%d %b %Y, %H:%M:%S')}")
-
-                    # 5. प्लॉटली कैंडलस्टिक चार्ट बनाना
                     fig = go.Figure(data=[go.Candlestick(x=hist.index,
                                                         open=hist['Open'],
                                                         high=hist['High'],
                                                         low=hist['Low'],
                                                         close=hist['Close'])])
-                    fig.update_layout(title=f"{company_name.upper()} - लाइव कैंडलस्टिक चार्ट (yfinance डेटा)",
-                                    yaxis_title='मूल्य',
-                                    xaxis_title='समय',
-                                    xaxis_rangeslider_visible=False)
+                    fig.update_layout(yaxis_title='मूल्य', xaxis_title='समय', xaxis_rangeslider_visible=False)
                     st.plotly_chart(fig, use_container_width=True)
 
             except Exception as e:
-                st.error(f"याहू फाइनेंस डेटा प्राप्त करने में एरर: {e}")
+                st.error(f"चार्ट एरर: {e}")
 
-        # ---- भाग 2: GEMINI AI एनालिसिस ----
+        # ---- भाग 2: AI एनालिसिस ----
         st.write("---")
         st.subheader("🤖 AI फंडामेंटल एनालिसिस")
         
-        # Google Gemini Pro API URL
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={API_KEY}"
+        # नया और फ़ास्ट Gemini 1.5 Flash मॉडल इस्तेमाल कर रहे हैं
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={API_KEY}"
         headers = {'Content-Type': 'application/json'}
         
-        # AI प्रॉम्प्ट को एक वित्तीय विशेषज्ञ की तरह सेट किया गया है
         prompt_text = f"""
-        आप एक स्ट्रिक्ट फंडामेंटल स्टॉक एनालिस्ट एजेंट हैं। 
-        कंपनी का नाम: {company_name.upper()} (Exchange: {exchange})
-        कृपया हालिया वित्तीय डेटा और खबरों के आधार पर इसका पूरा विश्लेषण तैयार करें। 
-        इन 3 नियमों पर फोकस करें:
-        1. सेक्टर एडवांटेज (PLI, China+1, High Growth सेक्टर).
-        2. Low PE vs High Growth (वैल्यूएशन और 15%+ ग्रोथ).
-        3. एग्जिट ट्रिगर्स (प्रमोटर प्लेज, ऑडिटर इस्तीफा, अचानक प्रॉफिट गिरना, फ्रॉड केस).
-        अंत में [BUY / WAIT / STRICT AVOID] का स्पष्ट निष्कर्ष दें।
-        
-        प्रतिक्रिया वित्तीय डेटा और विश्वसनीय समाचारों पर आधारित होनी चाहिए।
+        आप एक स्ट्रिक्ट फंडामेंटल स्टॉक एनालिस्ट हैं। 
+        कंपनी: {company_name.upper()} ({exchange})
+        1. सेक्टर एडवांटेज 2. वैल्यूएशन (PE vs Growth) 3. एग्जिट ट्रिगर्स (रिस्क) के आधार पर इसका विश्लेषण करें।
+        अंत में स्पष्ट निष्कर्ष दें: BUY, WAIT, या AVOID.
         """
         
-        data = {
-            "contents": [{
-                "parts": [{"text": prompt_text}]
-            }]
-        }
+        data = {"contents": [{"parts": [{"text": prompt_text}]}]}
         
-        with st.spinner("AI डेटा और खबरें पढ़ रहा है..."):
+        with st.spinner("AI एनालिसिस कर रहा है..."):
             try:
                 response = requests.post(url, headers=headers, data=json.dumps(data), timeout=30)
-                
                 if response.status_code == 200:
                     result = response.json()
-                    ai_response = result['candidates'][0]['content']['parts'][0]['text']
-                    st.success("एनालिसिस पूरा हुआ!")
-                    st.write(ai_response)
+                    st.success("एनालिसिस तैयार है!")
+                    st.write(result['candidates'][0]['content']['parts'][0]['text'])
                 else:
-                    st.error("AI सर्वर पर लोड ज्यादा है। कृपया कुछ सेकंड बाद दोबारा कोशिश करें।")
+                    # यह लाइन आपको असली एरर बताएगी (अगर API key गलत है तो)
+                    st.error(f"API Error: {response.text}") 
             except Exception as e:
-                st.error(f"AI कॉल में दिक्कत: {e}")
-
-# 6. ऐप के बारे में जानकारी
-st.sidebar.write("---")
-st.sidebar.subheader("ऐप के बारे में")
-st.sidebar.write("यह ऐप याहू फाइनेंस से लाइव मार्केट डेटा और Google Gemini Pro AI से वित्तीय विश्लेषण प्रदान करता है।")
-st.sidebar.write("डिज़ाइन किया गया है: [आपका नाम या आपकी टीम का नाम]")
+                st.error(f"AI कॉल एरर: {e}")
