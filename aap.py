@@ -9,7 +9,7 @@ st.title("📈 AI Stock & Options Analyst Pro")
 st.markdown("फंडामेंटल एनालिसिस, लाइव चार्ट्स और स्मार्ट ट्रेड सेटअप (SL & Targets) के साथ।")
 
 # 2. साइडबार में API Key 
-API_KEY = st.sidebar.text_input("🔑 अपनी Gemini API Key डालें:", type="password")
+API_KEY = st.text_input("🔑 अपनी Gemini API Key डालें:", type="password")
 
 st.write("---")
 col1, col2 = st.columns([3, 1])
