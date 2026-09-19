@@ -66,7 +66,7 @@ if st.button("📊 एनालिसिस और चार्ट दिखा�
     with st.spinner("AI एनालिसिस कर रहा है..."):
         try:
             genai.configure(api_key=API_KEY)
-            model = genai.GenerativeModel('gemini-pro') 
+            model = genai.GenerativeModel('gemini-3.5-flash') 
             response = model.generate_content(prompt_text)
             
             st.success("एनालिसिस तैयार है!")
